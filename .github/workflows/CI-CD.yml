@@ -26,25 +26,13 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run tests
-        run: |
-          pytest --cov=. --cov-report=xml
-
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./coverage.xml
+        run: pytest --cov=. --cov-report=xml
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Deploy to Render
-        env:
-          RENDER_DEPLOY_HOOK:${{secrets.RENDER_DEPLOY_HOOK}}
-        run:
-          curl$RENDER_DEPLOY_HOOK
+        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
