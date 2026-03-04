@@ -4,19 +4,18 @@
 let accessToken = null;
 let refreshTokenValue = null;
 
-const BASE_URL = "http://localhost:5000";
+// Automatically use same origin (NO CORS ISSUES)
+const BASE_URL = window.location.origin;
 
 /* =========================
    Tab Switching
 ========================= */
 function showTab(tab) {
-  document
-    .querySelectorAll(".tab-content")
-    .forEach((t) => t.classList.remove("active"));
+  document.querySelectorAll(".tab-content")
+    .forEach(t => t.classList.remove("active"));
 
-  document
-    .querySelectorAll(".tab-btn")
-    .forEach((b) => b.classList.remove("active"));
+  document.querySelectorAll(".tab-btn")
+    .forEach(b => b.classList.remove("active"));
 
   if (tab === "login") {
     document.getElementById("loginTab").classList.add("active");
@@ -38,16 +37,16 @@ function showMessage(text, type) {
 
   setTimeout(() => {
     messageDiv.style.display = "none";
-  }, 5000);
+  }, 4000);
 }
 
 /* =========================
    Signup
 ========================= */
-document.getElementById("signupForm").addEventListener("submit", async (e) => {
+document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("signupEmail").value;
+  const email = document.getElementById("signupEmail").value.trim();
   const password = document.getElementById("signupPassword").value;
   const confirmPassword = document.getElementById("signupConfirm").value;
 
@@ -78,7 +77,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
       showMessage(data.error || "Signup failed", "error");
     }
   } catch (error) {
-    showMessage("Error: " + error.message, "error");
+    showMessage("Network Error - Is backend running?", "error");
   }
 });
 
@@ -88,7 +87,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
 document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("loginEmail").value;
+  const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
   try {
@@ -119,12 +118,12 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
       showMessage(data.error || "Login failed", "error");
     }
   } catch (error) {
-    showMessage("Error: " + error.message, "error");
+    showMessage("Network Error - Check backend", "error");
   }
 });
 
 /* =========================
-   Protected Route Test
+   Protected Route
 ========================= */
 async function testProtectedRoute() {
   try {
@@ -140,17 +139,18 @@ async function testProtectedRoute() {
     const responseArea = document.getElementById("responseArea");
     responseArea.style.display = "block";
     responseArea.innerHTML = `
-            <h3>Protected Route Response:</h3>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
-        `;
+      <h3>Protected Route Response:</h3>
+      <pre>${JSON.stringify(data, null, 2)}</pre>
+    `;
 
     if (response.ok) {
       showMessage("Access granted!", "success");
     } else {
-      showMessage("Access denied: " + data.error, "error");
+      showMessage(data.error || "Access denied", "error");
     }
+
   } catch (error) {
-    showMessage("Error: " + error.message, "error");
+    showMessage("Network Error", "error");
   }
 }
 
@@ -170,15 +170,17 @@ async function refreshToken() {
 
     if (response.ok) {
       accessToken = data.access_token;
+
       document.getElementById("accessTokenDisplay").textContent =
         accessToken.substring(0, 50) + "...";
 
       showMessage("Token refreshed successfully!", "success");
     } else {
-      showMessage("Failed to refresh token", "error");
+      showMessage(data.error || "Refresh failed", "error");
     }
+
   } catch (error) {
-    showMessage("Error: " + error.message, "error");
+    showMessage("Network Error", "error");
   }
 }
 
@@ -187,25 +189,24 @@ async function refreshToken() {
 ========================= */
 async function logout() {
   try {
-    const response = await fetch(`${BASE_URL}/api/logout`, {
+    await fetch(`${BASE_URL}/api/logout`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
 
-    if (response.ok) {
-      accessToken = null;
-      refreshTokenValue = null;
+    accessToken = null;
+    refreshTokenValue = null;
 
-      document.getElementById("authSection").style.display = "block";
-      document.getElementById("dashboardSection").style.display = "none";
-      document.getElementById("loginForm").reset();
-      document.getElementById("responseArea").style.display = "none";
+    document.getElementById("authSection").style.display = "block";
+    document.getElementById("dashboardSection").style.display = "none";
+    document.getElementById("loginForm").reset();
+    document.getElementById("responseArea").style.display = "none";
 
-      showMessage("Logged out successfully!", "success");
-    }
+    showMessage("Logged out successfully!", "success");
+
   } catch (error) {
-    showMessage("Error: " + error.message, "error");
+    showMessage("Network Error", "error");
   }
 }
